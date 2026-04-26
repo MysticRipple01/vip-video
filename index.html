@@ -25,50 +25,64 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h3>📺 输入视频网址</h3>
-        <input type="text" id="videoUrl" placeholder="粘贴视频链接（爱奇艺/腾讯/优酷/B站等）">
-        <br>
-        <button class="action-btn clear-btn" onclick="clearUrl()">清空链接</button>
-        
-        <div class="platforms">
-            <button onclick="openSite('https://www.iqiyi.com')">爱奇艺</button>
-            <button onclick="openSite('https://v.qq.com')">腾讯视频</button>
-            <button onclick="openSite('https://www.youku.com/')">优酷</button>
-            <button onclick="openSite('https://www.bilibili.com/')">bilibili</button>
-        </div>
-        
-        <button class="action-btn play-btn" onclick="playVideo()">▶️ 播放VIP视频</button>
-        <p class="warning">⚠️ 提示：本案例仅供学习使用，不可作为他用。</p>
+
+<script>
+  // ====== 在这里修改你的密码 ======
+  const PASSWORD = "010203";
+  // ===============================
+
+  const userInput = prompt("请输入访问密码：");
+  if (userInput !== PASSWORD) {
+    alert("密码错误，无法访问！");
+    // 密码错误就跳转到空白页
+    window.location.href = "about:blank";
+  }
+</script>
+
+<div class="container">
+    <h3>📺 输入视频网址</h3>
+    <input type="text" id="videoUrl" placeholder="粘贴视频链接（爱奇艺/腾讯/优酷/B站等）">
+    <br>
+    <button class="action-btn clear-btn" onclick="clearUrl()">清空链接</button>
+    
+    <div class="platforms">
+        <button onclick="openSite('https://www.iqiyi.com')">爱奇艺</button>
+        <button onclick="openSite('https://v.qq.com')">腾讯视频</button>
+        <button onclick="openSite('https://www.youku.com/')">优酷</button>
+        <button onclick="openSite('https://www.bilibili.com/')">bilibili</button>
     </div>
+    
+    <button class="action-btn play-btn" onclick="playVideo()">▶️ 播放VIP视频</button>
+    <p class="warning">⚠️ 提示：本案例仅供学习使用，不可作为他用。</p>
+</div>
 
-    <script>
-        function openSite(url) {
-            window.open(url, '_blank');
-        }
+<script>
+    function openSite(url) {
+        window.open(url, '_blank');
+    }
 
-        function playVideo() {
-            const video = document.getElementById('videoUrl').value.trim();
-            if (!video) {
-                alert('请先粘贴视频网址');
-                return;
-            }
-            // 解析接口（可自行替换）
-            window.open('https://jx.xmflv.cc/?url=' + video, '_blank');
+    function playVideo() {
+        const video = document.getElementById('videoUrl').value.trim();
+        if (!video) {
+            alert('请先粘贴视频网址');
+            return;
         }
+        // 解析接口（可换）
+        window.open('https://jx.xmflv.cc/?url=' + video, '_blank');
+    }
 
-        function clearUrl() {
-            document.getElementById('videoUrl').value = '';
-        }
+    function clearUrl() {
+        document.getElementById('videoUrl').value = '';
+    }
 
-        // 注册 Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW 注册成功'))
-                    .catch(err => console.log('SW 注册失败', err));
-            });
-        }
-    </script>
+    // 注册 Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW 注册成功'))
+                .catch(err => console.log('SW 注册失败', err));
+        });
+    }
+</script>
 </body>
 </html>
