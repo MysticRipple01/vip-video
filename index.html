@@ -2,109 +2,788 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>VIP追剧神器</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2196F3">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container, .login-box { background: white; width: 90%; max-width: 480px; padding: 25px 20px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center; }
-        h3 { margin-bottom: 20px; color: #333; }
-        input[type="text"], input[type="password"] { width: 85%; padding: 12px; border: 2px solid #ddd; border-radius: 12px; font-size: 14px; margin-bottom: 15px; outline: none; }
-        input[type="text"]:focus, input[type="password"]:focus { border-color: #2196F3; }
-        .platforms { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
-        .platforms button { flex: 1 1 22%; padding: 10px 4px; background: #e3f2fd; border: none; border-radius: 10px; color: #1976D2; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .platforms button:hover { background: #bbdefb; }
-        .action-btn { width: 85%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 6px 0; transition: 0.2s; }
-        .play-btn { background: #2196F3; color: white; }
-        .play-btn:hover { background: #1976D2; }
-        .clear-btn { background: #f5f5f5; color: #555; }
-        .clear-btn:hover { background: #e0e0e0; }
-        .warning { color: red; font-weight: bold; margin-top: 15px; font-size: 13px; }
-        .error-msg { color: red; font-size: 14px; margin-top: -5px; margin-bottom: 10px; }
+        :root {
+            /* 亮色主题 */
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text: #1a1a2e;
+            --text-secondary: #555;
+            --border: #e0e0e0;
+            --input-bg: #f8f9fa;
+            --input-focus-border: #4a6cf7;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.10);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+            --primary: #4a6cf7;
+            --primary-hover: #3651d5;
+            --primary-light: #eef1ff;
+            --danger: #e74c3c;
+            --danger-light: #fdecea;
+            --success: #27ae60;
+            --platform-bg: #f0f4ff;
+            --platform-hover: #dce4ff;
+            --platform-text: #4a6cf7;
+            --clear-bg: #f5f5f5;
+            --clear-hover: #e8e8e8;
+            --divider: #eee;
+            --warning-bg: #fffbf0;
+            --warning-text: #b8860b;
+            --warning-border: #f0d060;
+            --radius-sm: 10px;
+            --radius: 14px;
+            --radius-lg: 18px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f0f1a;
+                --card-bg: #1a1a2e;
+                --text: #e8e8f0;
+                --text-secondary: #b0b0c0;
+                --border: #2a2a40;
+                --input-bg: #222236;
+                --input-focus-border: #6d8aff;
+                --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+                --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.35);
+                --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+                --primary: #6d8aff;
+                --primary-hover: #8aa1ff;
+                --primary-light: #1a1f3a;
+                --danger: #ff6b6b;
+                --danger-light: #2a1a1f;
+                --platform-bg: #1e2240;
+                --platform-hover: #282d50;
+                --platform-text: #8aa1ff;
+                --clear-bg: #252540;
+                --clear-hover: #303050;
+                --divider: #2a2a3a;
+                --warning-bg: #1f1a10;
+                --warning-text: #d4a030;
+                --warning-border: #4a3a18;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            transition: background var(--transition);
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== 卡片容器 ========== */
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 440px;
+            padding: 28px 24px 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4a6cf7, #6d8aff, #a78bfa, #4a6cf7);
+            background-size: 200% 100%;
+            animation: gradientShift 4s ease infinite;
+        }
+        @keyframes gradientShift {
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* ========== 标题 ========== */
+        .card h3 {
+            margin-bottom: 6px;
+            color: var(--text);
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            transition: color var(--transition);
+        }
+        .card .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            transition: color var(--transition);
+        }
+
+        /* ========== 输入框 ========== */
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 13px 44px 13px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            background: var(--input-bg);
+            color: var(--text);
+            outline: none;
+            transition: all var(--transition);
+            font-family: inherit;
+            letter-spacing: 0.3px;
+        }
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.1);
+            background: var(--card-bg);
+        }
+        input::placeholder {
+            color: #aaa;
+            transition: color var(--transition);
+        }
+        /* 密码可见切换按钮 */
+        .toggle-password {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px 10px;
+            font-size: 1.1rem;
+            color: #999;
+            border-radius: 8px;
+            transition: all var(--transition);
+            line-height: 1;
+            z-index: 2;
+        }
+        .toggle-password:hover {
+            color: var(--text);
+            background: rgba(128, 128, 128, 0.1);
+        }
+        .toggle-password:active {
+            transform: translateY(-50%) scale(0.9);
+        }
+
+        /* ========== 按钮通用 ========== */
+        button {
+            cursor: pointer;
+            font-family: inherit;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: transparent;
+            transition: background var(--transition);
+            border-radius: inherit;
+        }
+        .btn:active::after {
+            background: rgba(0, 0, 0, 0.08);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        /* 主按钮 */
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            margin: 6px 0;
+            box-shadow: 0 4px 14px rgba(74, 108, 247, 0.3);
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            transform: scale(0.97) translateY(0);
+            box-shadow: 0 2px 8px rgba(74, 108, 247, 0.25);
+        }
+
+        /* 次要按钮 */
+        .btn-secondary {
+            background: var(--clear-bg);
+            color: var(--text-secondary);
+            margin: 4px 0;
+            font-weight: 500;
+        }
+        .btn-secondary:hover {
+            background: var(--clear-hover);
+            color: var(--text);
+        }
+
+        /* 小按钮 */
+        .btn-sm {
+            width: auto;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1.5px solid transparent;
+        }
+        .btn-sm:hover {
+            background: var(--clear-bg);
+            border-color: var(--border);
+            color: var(--text);
+        }
+
+        /* ========== 平台选择器 ========== */
+        .platforms {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 10px 0 14px;
+        }
+        .platform-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 12px 4px;
+            background: var(--platform-bg);
+            border: 2px solid transparent;
+            border-radius: var(--radius);
+            color: var(--platform-text);
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-decoration: none;
+            min-height: 60px;
+        }
+        .platform-btn:hover {
+            background: var(--platform-hover);
+            border-color: rgba(74, 108, 247, 0.25);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        .platform-btn:active {
+            transform: scale(0.95);
+            background: var(--platform-hover);
+        }
+        .platform-btn .icon {
+            font-size: 1.5rem;
+            line-height: 1;
+            transition: transform var(--transition);
+        }
+        .platform-btn:hover .icon {
+            transform: scale(1.15);
+        }
+
+        /* ========== 警告提示 ========== */
+        .warning {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 14px;
+            padding: 10px 14px;
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            border-radius: var(--radius-sm);
+            color: var(--warning-text);
+            font-size: 0.78rem;
+            font-weight: 500;
+            line-height: 1.4;
+            transition: all var(--transition);
+        }
+        .warning .warn-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* ========== 错误消息 ========== */
+        .error-msg {
+            color: var(--danger);
+            font-size: 13px;
+            font-weight: 500;
+            min-height: 20px;
+            margin: 4px 0 8px;
+            transition: all var(--transition);
+            animation: none;
+        }
+        .error-msg.shake {
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            15% {
+                transform: translateX(-8px);
+            }
+            30% {
+                transform: translateX(8px);
+            }
+            45% {
+                transform: translateX(-6px);
+            }
+            60% {
+                transform: translateX(6px);
+            }
+            75% {
+                transform: translateX(-3px);
+            }
+            90% {
+                transform: translateX(3px);
+            }
+        }
+
+        /* ========== 登出按钮 ========== */
+        .logout-area {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        .btn-logout {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all var(--transition);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .btn-logout:hover {
+            color: var(--danger);
+            background: var(--danger-light);
+            text-decoration: none;
+        }
+
+        /* ========== Toast 提示 ========== */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 9999;
+            pointer-events: none;
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            background: var(--success);
+        }
+        .toast.error {
+            background: var(--danger);
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 380px) {
+            .card {
+                padding: 22px 14px 18px;
+                border-radius: var(--radius);
+            }
+            .card h3 {
+                font-size: 1.2rem;
+            }
+            .platforms {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .platform-btn {
+                padding: 10px 6px;
+                font-size: 11px;
+                min-height: 50px;
+            }
+            .platform-btn .icon {
+                font-size: 1.3rem;
+            }
+            input[type="text"],
+            input[type="password"] {
+                padding: 12px 40px 12px 14px;
+                font-size: 13px;
+            }
+            .btn {
+                padding: 13px 16px;
+                font-size: 14px;
+            }
+        }
+        @media (min-width: 381px) and (max-width: 480px) {
+            .platforms {
+                gap: 6px;
+            }
+            .platform-btn {
+                padding: 11px 3px;
+                font-size: 11px;
+                min-height: 55px;
+            }
+        }
     </style>
 </head>
 <body>
 
-<!-- ================= 密码验证界面 ================= -->
-<div id="loginBox" class="login-box">
-    <h3>🔒 请输入访问密码</h3>
-    <input type="password" id="passwordInput" placeholder="请输入密码">
-    <br>
-    <button class="action-btn play-btn" onclick="checkPassword()">验证进入</button>
-    <p id="errorMsg" class="error-msg"></p>
-</div>
+    <!-- ==================== Toast 提示 ==================== -->
+    <div id="toast" class="toast"></div>
 
-<!-- ================= 主界面（默认隐藏） ================= -->
-<div id="mainApp" class="container" style="display: none;">
-    <h3>📺 输入视频网址</h3>
-    <input type="text" id="videoUrl" placeholder="粘贴视频链接（爱奇艺/腾讯/优酷/B站等）">
-    <br>
-    <button class="action-btn clear-btn" onclick="clearUrl()">清空链接</button>
-    
-    <div class="platforms">
-        <button onclick="openSite('https://www.iqiyi.com')">爱奇艺</button>
-        <button onclick="openSite('https://v.qq.com')">腾讯视频</button>
-        <button onclick="openSite('https://www.youku.com/')">优酷</button>
-        <button onclick="openSite('https://www.bilibili.com/')">bilibili</button>
+    <!-- ==================== 密码验证界面 ==================== -->
+    <div id="loginBox" class="card">
+        <h3>🔒 访问验证</h3>
+        <p class="subtitle">请输入密码以继续使用</p>
+        <div class="input-wrapper">
+            <input type="password" id="passwordInput" placeholder="请输入访问密码" autocomplete="off">
+            <button class="toggle-password" id="togglePwdBtn" title="显示/隐藏密码" tabindex="-1">👁️</button>
+        </div>
+        <button class="btn btn-primary" id="loginBtn">
+            <span>🔓</span> 验证进入
+        </button>
+        <p id="errorMsg" class="error-msg"></p>
     </div>
-    
-    <button class="action-btn play-btn" onclick="playVideo()">▶️ 播放VIP视频</button>
-    <p class="warning">⚠️ 提示：不可作为他用。</p>
-</div>
 
-<script>
-    // ====== 在这里修改你的密码 ======
-    const PASSWORD = "010203";
-    // ===============================
+    <!-- ==================== 主界面（默认隐藏） ==================== -->
+    <div id="mainApp" class="card" style="display: none;">
+        <h3>📺 VIP追剧神器</h3>
+        <p class="subtitle">粘贴视频链接，一键解析播放</p>
 
-    function checkPassword() {
-        const input = document.getElementById('passwordInput').value;
-        const errorMsg = document.getElementById('errorMsg');
-        if (input === PASSWORD) {
-            // 密码正确：隐藏登录框，显示主界面
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-        } else {
-            errorMsg.textContent = '密码错误，请重试';
-            document.getElementById('passwordInput').value = '';
-        }
-    }
+        <div class="input-wrapper">
+            <input type="text" id="videoUrl" placeholder="粘贴视频链接（爱奇艺/腾讯/优酷/B站等）" autocomplete="off">
+            <button class="toggle-password" id="pasteBtn" title="从剪贴板粘贴" tabindex="-1" style="font-size:1.2rem;">📋</button>
+        </div>
 
-    // 支持回车键提交密码
-    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            checkPassword();
-        }
-    });
+        <button class="btn btn-secondary btn-sm" id="clearBtn" style="margin-bottom:10px;">
+            🧹 清空链接
+        </button>
 
-    // ===== 以下为主应用功能 =====
-    function openSite(url) {
-        window.open(url, '_blank');
-    }
+        <!-- 平台快捷入口 -->
+        <div class="platforms">
+            <button class="platform-btn" data-url="https://www.iqiyi.com">
+                <span class="icon">🎬</span> 爱奇艺
+            </button>
+            <button class="platform-btn" data-url="https://v.qq.com">
+                <span class="icon">🐧</span> 腾讯视频
+            </button>
+            <button class="platform-btn" data-url="https://www.youku.com/">
+                <span class="icon">📀</span> 优酷
+            </button>
+            <button class="platform-btn" data-url="https://www.bilibili.com/">
+                <span class="icon">📡</span> bilibili
+            </button>
+        </div>
 
-    function playVideo() {
-        const video = document.getElementById('videoUrl').value.trim();
-        if (!video) {
-            alert('请先粘贴视频网址');
-            return;
-        }
-        window.open('https://jx.xmflv.cc/?url=' + video, '_blank');
-    }
+        <button class="btn btn-primary" id="playBtn">
+            <span>▶️</span> 播放VIP视频
+        </button>
 
-    function clearUrl() {
-        document.getElementById('videoUrl').value = '';
-    }
+        <p class="warning">
+            <span class="warn-icon">⚠️</span>
+            <span>请仅用于个人学习观看，勿作他用</span>
+        </p>
 
-    // 注册 Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('SW 注册成功'))
-                .catch(err => console.log('SW 注册失败', err));
-        });
-    }
-</script>
+        <!-- 登出 -->
+        <div class="logout-area">
+            <button class="btn-logout" id="logoutBtn">🔒 退出登录</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ==================== 配置 ====================
+            const PASSWORD = "010203"; // ★ 在此修改密码
+            const SESSION_KEY = "vip_player_authenticated";
+            const PARSE_API = "https://jx.xmflv.cc/?url=";
+            // =============================================
+
+            // ==================== DOM 元素缓存 ====================
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            const loginBox = $('#loginBox');
+            const mainApp = $('#mainApp');
+            const passwordInput = $('#passwordInput');
+            const loginBtn = $('#loginBtn');
+            const errorMsg = $('#errorMsg');
+            const togglePwdBtn = $('#togglePwdBtn');
+            const videoUrlInput = $('#videoUrl');
+            const playBtn = $('#playBtn');
+            const clearBtn = $('#clearBtn');
+            const pasteBtn = $('#pasteBtn');
+            const logoutBtn = $('#logoutBtn');
+            const toastEl = $('#toast');
+            const platformBtns = $$('.platform-btn');
+
+            // ==================== Toast ====================
+            let toastTimer;
+
+            function showToast(msg, type = '') {
+                clearTimeout(toastTimer);
+                toastEl.textContent = msg;
+                toastEl.className = 'toast ' + type + ' show';
+                toastTimer = setTimeout(() => {
+                    toastEl.classList.remove('show');
+                }, 2000);
+            }
+
+            // ==================== 密码可见切换 ====================
+            let pwdVisible = false;
+            togglePwdBtn.addEventListener('click', () => {
+                pwdVisible = !pwdVisible;
+                passwordInput.type = pwdVisible ? 'text' : 'password';
+                togglePwdBtn.textContent = pwdVisible ? '🙈' : '👁️';
+                togglePwdBtn.title = pwdVisible ? '隐藏密码' : '显示密码';
+                passwordInput.focus();
+            });
+
+            // ==================== 密码验证 ====================
+            function checkPassword() {
+                const input = passwordInput.value.trim();
+                errorMsg.classList.remove('shake');
+
+                if (!input) {
+                    errorMsg.textContent = '请输入密码';
+                    void errorMsg.offsetWidth;
+                    errorMsg.classList.add('shake');
+                    passwordInput.focus();
+                    return;
+                }
+                if (input === PASSWORD) {
+                    // 验证成功
+                    sessionStorage.setItem(SESSION_KEY, 'true');
+                    errorMsg.textContent = '';
+                    passwordInput.value = '';
+                    // 过渡动画
+                    loginBox.style.opacity = '0';
+                    loginBox.style.transform = 'scale(0.95)';
+                    loginBox.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    setTimeout(() => {
+                        loginBox.style.display = 'none';
+                        mainApp.style.display = 'block';
+                        mainApp.style.opacity = '0';
+                        mainApp.style.transform = 'scale(0.95)';
+                        requestAnimationFrame(() => {
+                            mainApp.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+                            mainApp.style.opacity = '1';
+                            mainApp.style.transform = 'scale(1)';
+                        });
+                        videoUrlInput.focus();
+                    }, 280);
+                    showToast('✅ 验证成功，欢迎使用', 'success');
+                } else {
+                    errorMsg.textContent = '❌ 密码错误，请重试';
+                    void errorMsg.offsetWidth;
+                    errorMsg.classList.add('shake');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    // 抖动输入框
+                    passwordInput.style.borderColor = 'var(--danger)';
+                    setTimeout(() => {
+                        passwordInput.style.borderColor = 'var(--border)';
+                    }, 600);
+                }
+            }
+
+            loginBtn.addEventListener('click', checkPassword);
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkPassword();
+            });
+
+            // ==================== 会话恢复 ====================
+            function restoreSession() {
+                if (sessionStorage.getItem(SESSION_KEY) === 'true') {
+                    loginBox.style.display = 'none';
+                    mainApp.style.display = 'block';
+                    mainApp.style.opacity = '1';
+                    mainApp.style.transform = 'scale(1)';
+                }
+            }
+            restoreSession();
+
+            // ==================== 退出登录 ====================
+            function logout() {
+                sessionStorage.removeItem(SESSION_KEY);
+                mainApp.style.opacity = '0';
+                mainApp.style.transform = 'scale(0.95)';
+                mainApp.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                setTimeout(() => {
+                    mainApp.style.display = 'none';
+                    loginBox.style.display = 'block';
+                    loginBox.style.opacity = '0';
+                    loginBox.style.transform = 'scale(0.95)';
+                    requestAnimationFrame(() => {
+                        loginBox.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+                        loginBox.style.opacity = '1';
+                        loginBox.style.transform = 'scale(1)';
+                    });
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    videoUrlInput.value = '';
+                }, 280);
+                showToast('👋 已安全退出');
+            }
+            logoutBtn.addEventListener('click', logout);
+
+            // ==================== 平台快捷入口 ====================
+            platformBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.getAttribute('data-url');
+                    if (url) {
+                        window.open(url, '_blank');
+                    }
+                });
+            });
+
+            // ==================== 播放视频 ====================
+            function playVideo() {
+                const video = videoUrlInput.value.trim();
+                if (!video) {
+                    showToast('⚠️ 请先粘贴视频网址', 'error');
+                    videoUrlInput.focus();
+                    // 输入框抖动提示
+                    videoUrlInput.style.borderColor = 'var(--danger)';
+                    setTimeout(() => {
+                        videoUrlInput.style.borderColor = 'var(--border)';
+                    }, 600);
+                    return;
+                }
+                // 简单检测是否包含URL特征
+                if (!/^https?:\/\//.test(video) && !/\.(com|cn|net|org|tv)\//.test(video)) {
+                    // 可能是省略了协议的URL，尝试补全
+                    if (/\.(com|cn|net|org|tv)/.test(video) && !/^https?:\/\//.test(video)) {
+                        const fixedUrl = 'https://' + video;
+                        showToast('🔗 已自动补全链接', 'success');
+                        window.open(PARSE_API + encodeURIComponent(fixedUrl), '_blank');
+                        return;
+                    }
+                    showToast('⚠️ 链接格式可能不正确，请检查', 'error');
+                    return;
+                }
+                window.open(PARSE_API + encodeURIComponent(video), '_blank');
+                showToast('🚀 正在打开解析页面...', 'success');
+            }
+            playBtn.addEventListener('click', playVideo);
+            videoUrlInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') playVideo();
+            });
+
+            // ==================== 清空链接 ====================
+            function clearUrl() {
+                if (videoUrlInput.value.trim()) {
+                    videoUrlInput.value = '';
+                    videoUrlInput.focus();
+                    showToast('🧹 链接已清空');
+                } else {
+                    videoUrlInput.focus();
+                }
+            }
+            clearBtn.addEventListener('click', clearUrl);
+
+            // ==================== 粘贴按钮 ====================
+            pasteBtn.addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text && text.trim()) {
+                        videoUrlInput.value = text.trim();
+                        showToast('📋 已粘贴剪贴板内容', 'success');
+                        // 自动聚焦并选中
+                        videoUrlInput.focus();
+                        videoUrlInput.select();
+                    } else {
+                        showToast('📋 剪贴板为空', 'error');
+                    }
+                } catch (err) {
+                    // 降级方案：聚焦输入框让用户手动粘贴
+                    videoUrlInput.focus();
+                    videoUrlInput.select();
+                    showToast('📋 请手动粘贴 (Ctrl+V)', 'error');
+                }
+            });
+
+            // ==================== Service Worker ====================
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => console.log('✅ Service Worker 注册成功', reg.scope))
+                        .catch(err => console.warn('⚠️ Service Worker 注册失败:', err.message));
+                });
+            }
+
+            // ==================== 初始聚焦 ====================
+            // 页面加载时聚焦密码输入框
+            if (loginBox.style.display !== 'none') {
+                passwordInput.focus();
+            }
+
+            // ==================== 全局键盘快捷键 ====================
+            document.addEventListener('keydown', (e) => {
+                // Ctrl+Shift+V 在主界面聚焦视频输入框
+                if (e.ctrlKey && e.shiftKey && e.key === 'V' && mainApp.style.display !== 'none') {
+                    e.preventDefault();
+                    videoUrlInput.focus();
+                    videoUrlInput.select();
+                }
+            });
+
+            console.log('%c🎬 VIP追剧神器已就绪 %c| %c保护好你的密码哦~',
+                'font-size:16px;', '', 'color:#4a6cf7;');
+        })();
+    </script>
 </body>
 </html>
