@@ -1,522 +1,110 @@
-// ==UserScript==
-// @name              全网VIP视频免费破解去广告【优化版】
-// @namespace         video_vip_optimized
-// @version           4.0.0
-// @description       全网VIP视频解析：爱奇艺、腾讯、优酷、bilibili等视频免费解析！界面更清爽，性能更优。
-// @icon              https://cdn.jsdmirror.com/gh/88lin/picx-images-hosting@master/favicon.67xwxgc03y.svg
-// @author             优化版：原茉灵智库 (https://blog.88lin.eu.org/article/46)
-// @match             *://v.qq.com/x/page/*
-// @match             *://v.qq.com/x/cover/*
-// @match             *://v.qq.com/tv/*
-// @match             *://*.iqiyi.com/v_*
-// @match             *://*.iqiyi.com/a_*
-// @match             *://*.iqiyi.com/w_*
-// @match             *://*.iq.com/play/*
-// @match             *://*.youku.com/v_*
-// @match             *://*.youku.com/video*
-// @match             *://*.youku.com/*?vid=*
-// @match             *://*.mgtv.com/b/*
-// @match             *://*.tudou.com/v_*
-// @match             *://tv.sohu.com/v/*
-// @match             *://*.bilibili.com/video/*
-// @match             *://*.bilibili.com/bangumi/play/*
-// @match             *://v.pptv.com/show/*
-// @match             *://vip.pptv.com/show/*
-// @match             *://www.wasu.cn/Play/show/*
-// @match             *://*.le.com/ptv/vplay/*
-// @match             *://*.acfun.cn/v/*
-// @match             *://*.acfun.cn/bangumi/*
-// @match             *://*.1905.com/play/*
-// @match             *://m.v.qq.com/x/m/*
-// @match             *://m.v.qq.com/*
-// @match             *://m.iqiyi.com/*
-// @match             *://m.iqiyi.com/v_*
-// @match             *://m.youku.com/video/*
-// @match             *://m.youku.com/alipay_*
-// @match             *://m.mgtv.com/b/*
-// @match             *://m.tv.sohu.com/v/*
-// @match             *://m.tv.sohu.com/album/*
-// @match             *://m.pptv.com/show/*
-// @match             *://m.bilibili.com/anime/*
-// @match             *://m.bilibili.com/video/*
-// @match             *://m.bilibili.com/bangumi/play/*
-// @grant             GM_addStyle
-// @grant             GM_openInTab
-// @grant             GM_getValue
-// @grant             GM_setValue
-// @grant             GM_xmlhttpRequest
-// @require           https://cdn.jsdmirror.com/npm/jquery@3.7.1/dist/jquery.min.js
-// @license           GPL License
-// ==/UserScript==
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP追剧神器</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container, .login-box { background: white; width: 90%; max-width: 480px; padding: 25px 20px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center; }
+        h3 { margin-bottom: 20px; color: #333; }
+        input[type="text"], input[type="password"] { width: 85%; padding: 12px; border: 2px solid #ddd; border-radius: 12px; font-size: 14px; margin-bottom: 15px; outline: none; }
+        input[type="text"]:focus, input[type="password"]:focus { border-color: #2196F3; }
+        .platforms { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
+        .platforms button { flex: 1 1 22%; padding: 10px 4px; background: #e3f2fd; border: none; border-radius: 10px; color: #1976D2; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .platforms button:hover { background: #bbdefb; }
+        .action-btn { width: 85%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 6px 0; transition: 0.2s; }
+        .play-btn { background: #2196F3; color: white; }
+        .play-btn:hover { background: #1976D2; }
+        .clear-btn { background: #f5f5f5; color: #555; }
+        .clear-btn:hover { background: #e0e0e0; }
+        .warning { color: red; font-weight: bold; margin-top: 15px; font-size: 13px; }
+        .error-msg { color: red; font-size: 14px; margin-top: -5px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
 
-(function () {
-    'use strict';
+<!-- ================= 密码验证界面 ================= -->
+<div id="loginBox" class="login-box">
+    <h3>🔒 请输入访问密码</h3>
+    <input type="password" id="passwordInput" placeholder="请输入密码">
+    <br>
+    <button class="action-btn play-btn" onclick="checkPassword()">验证进入</button>
+    <p id="errorMsg" class="error-msg"></p>
+</div>
 
-    // ==================== 配置管理 ====================
-    const CONFIG = {
-        isMobile: /(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini)/i.test(navigator.userAgent),
-        storageKeys: {
-            autoPlayEnabled: 'auto_player_key_' + location.host,
-            autoPlayIndex: 'auto_player_value_' + location.host,
-            flag: 'flag_vip'
-        },
-        // 解析接口列表
-        parseSources: [
-            { name: "默认A", url: "https://json.fongmi.cc/web?url=" },
-            { name: "默认B", url: "https://super.playr.top/?url=" },
-            { name: "CK解析", url: "https://www.ckplayer.vip/jiexi/?url=" },
-            { name: "Player-JY", url: "https://jx.playerjy.com/?url=" },
-            { name: "虾米解析", url: "https://jx.xmflv.com/?url=" },
-            { name: "789解析", url: "https://jiexi.789jiexi.icu:4433/?url=" },
-            { name: "HLS解析", url: "https://jx.hls.one/?url=" },
-            { name: "极速解析", url: "https://jx.2s0.cn/player/?url=" },
-            { name: "冰豆解析", url: "https://bd.jx.cn/?url=" },
-            { name: "剖元解析", url: "https://www.pouyun.com/?url=" },
-            { name: "973解析", url: "https://jx.973973.xyz/?url=" },
-            { name: "七哥解析", url: "https://jx.nnxv.cn/tv.php?url=" },
-            { name: "playm3u8", url: "https://www.playm3u8.cn/jiexi.php?url=" },
-            { name: "937解析", url: "https://bfq.937auth.vip?url=" },
-            { name: "七七云解析", url: "https://jx.77flv.cc/?url=" },
-            { name: "芒果TV1", url: "https://video.isyour.love/player/getplayer?url=" },
-            { name: "M1907", url: "https://im1907.top/?jx=" },
-            { name: "Yparse", url: "https://jx.yparse.com/index.php?url=" }
-        ],
-        // 各站点预置配置
-        siteConfigs: {
-            "v.qq.com": { container: "#mod_player", cleanup: [".mod_vip_popup", "#mask_layer"] },
-            "m.v.qq.com": { container: ".mod_player", cleanup: [".mod_vip_popup", "[class*=_app_]"] },
-            "www.iqiyi.com": {
-                container: "#areaLeftContainer",
-                cleanup: ["#playerPopup", "#vipCoversBox", "div.iqp-player-vipmask", "div.iqp-player-paymask",
-                    "div.iqp-player-loginmask", "[class^=qy-header-login-pop]", "#player-loading-layer"
-                ]
-            },
-            "m.iqiyi.com": {
-                container: ".m-video-player-wrap",
-                cleanup: ["div.m-iqyGuide-layer", "a[down-app-android-url]", "div.iqp-player-vipmask", "[name=m-extendBar]",
-                    "[class*=ChannelHomeBanner]", "section.m-hotWords-bottom"
-                ]
-            },
-            "v.youku.com": {
-                container: "#ykPlayer",
-                cleanup: ["#iframaWrapper", "#video_side_cashier", ".video_side_cashier_wrapper" ,
-                    "#youku-dashboard > div.kui-dashboard-dashboard-panel",
-                    "#youku-dashboard > div.kui-dashboard-dashboard-background",
-                    "#youku-dashboard > div.kui-dashboard-bar-container",
-                    "#youku-dashboard > div.kui-dashboard-timer-container"
-                ]
-            },
-            "m.youku.com": { container: "#playerMouseWheel", cleanup: [] },
-            "www.bilibili.com": { container: "#bilibiliPlayer", cleanup: [] },
-            "m.bilibili.com": { container: ".player-wrapper", cleanup: [] },
-            "www.mgtv.com": { container: "#mgtv-player-wrap", cleanup: [] },
-            "m.mgtv.com": {
-                container: ".video-area",
-                cleanup: ["div.adFixedContain", "div[class^=mg-app]", "div.personal", "div[data-v-41c9a64e]"]
-            },
-            "tv.sohu.com": { container: "#player", cleanup: [] },
-            "www.le.com": { container: "#le_playbox", cleanup: [] },
-            "video.tudou.com": { container: ".td-playbox", cleanup: [] },
-            "v.pptv.com": { container: "#pptv_playpage_box", cleanup: [] },
-            "vip.pptv.com": { container: ".w-video", cleanup: [] },
-            "www.wasu.cn": { container: "#flashContent", cleanup: [] },
-            "www.acfun.cn": { container: "#player", cleanup: [] },
-            "www.1905.com": { container: "#vodPlayer", cleanup: [] }
-        }
-    };
+<!-- ================= 主界面（默认隐藏） ================= -->
+<div id="mainApp" class="container" style="display: none;">
+    <h3>📺 输入视频网址</h3>
+    <input type="text" id="videoUrl" placeholder="粘贴视频链接（爱奇艺/腾讯/优酷/B站等）">
+    <br>
+    <button class="action-btn clear-btn" onclick="clearUrl()">清空链接</button>
+    
+    <div class="platforms">
+        <button onclick="openSite('https://www.iqiyi.com')">爱奇艺</button>
+        <button onclick="openSite('https://v.qq.com')">腾讯视频</button>
+        <button onclick="openSite('https://www.youku.com/')">优酷</button>
+        <button onclick="openSite('https://www.bilibili.com/')">bilibili</button>
+    </div>
+    
+    <button class="action-btn play-btn" onclick="playVideo()">▶️ 播放VIP视频</button>
+    <p class="warning">⚠️ 提示：不可作为他用。</p>
+</div>
 
-    // ==================== 工具函数 ====================
-    const Utils = {
-        // 等待指定元素出现
-        waitForElement: (selector, timeout = 60000) => {
-            return new Promise((resolve, reject) => {
-                const element = document.querySelector(selector);
-                if (element) return resolve(element);
-                
-                const observer = new MutationObserver(() => {
-                    const elem = document.querySelector(selector);
-                    if (elem) {
-                        observer.disconnect();
-                        resolve(elem);
-                    }
-                });
-                observer.observe(document.body, { childList: true, subtree: true });
-                
-                if (timeout) {
-                    setTimeout(() => {
-                        observer.disconnect();
-                        reject(new Error(`Element ${selector} not found within ${timeout}ms`));
-                    }, timeout);
-                }
-            });
-        },
+<script>
+    // ====== 在这里修改你的密码 ======
+    const PASSWORD = "010203";
+    // ===============================
 
-        // 监听 URL 变化并执行回调
-        onUrlChange(callback) {
-            let oldHref = location.href;
-            setInterval(() => {
-                const newHref = location.href;
-                if (newHref !== oldHref) {
-                    oldHref = newHref;
-                    callback(newHref);
-                }
-            }, 500);
-        },
-
-        // 样式注入
-        injectStyle(css) {
-            GM_addStyle(css);
-        }
-    };
-
-    // ==================== 媒体拦截器（阻止原播放器） ====================
-    const MediaBlocker = {
-        started: false,
-
-        start() {
-            if (this.started) return;
-            this.started = true;
-            this.muteExistingMedia();
-            this.overridePlayMethod();
-            this.observeMediaAdditions();
-        },
-
-        muteExistingMedia() {
-            document.querySelectorAll('video, audio').forEach(media => {
-                media.pause();
-                media.removeAttribute('src');
-                media.src = '';
-                media.load();
-            });
-        },
-
-        overridePlayMethod() {
-            const originalPlay = HTMLMediaElement.prototype.play;
-            HTMLMediaElement.prototype.play = function () {
-                this.pause();
-                this.removeAttribute('src');
-                this.src = '';
-                return Promise.resolve();
-            };
-        },
-
-        observeMediaAdditions() {
-            const observer = new MutationObserver(mutations => {
-                mutations.forEach(mutation => {
-                    mutation.addedNodes.forEach(node => {
-                        if (node.nodeType === 1) {
-                            if (node.matches && node.matches('video, audio')) {
-                                MediaBlocker.blockMedia(node);
-                            } else if (node.querySelectorAll) {
-                                node.querySelectorAll('video, audio').forEach(MediaBlocker.blockMedia);
-                            }
-                        }
-                    });
-                });
-            });
-            observer.observe(document.documentElement, { childList: true, subtree: true });
-        },
-
-        blockMedia(media) {
-            if (!media) return;
-            try {
-                media.pause();
-                media.removeAttribute('src');
-                media.src = '';
-                media.load();
-                media.volume = 0;
-                media.muted = true;
-            } catch (e) {}
-        }
-    };
-
-    // ==================== 主解析界面 ====================
-    class VideoParser {
-        constructor() {
-            this.currentConfig = null; // 当前站点配置
-            this.vipBoxId = 'vip_jx_box_' + Math.random().toString(36).substr(2, 9);
-            this.iframeClass = 'vip_jx_iframe';
-            this.initSiteConfig();
-        }
-
-        initSiteConfig() {
-            for (const [host, cfg] of Object.entries(CONFIG.siteConfigs)) {
-                if (location.host.includes(host)) {
-                    this.currentConfig = { host, ...cfg };
-                    break;
-                }
-            }
-            if (!this.currentConfig) {
-                console.warn('当前站点未适配，脚本将不会运行');
-            }
-        }
-
-        async start() {
-            if (!this.currentConfig) return;
-            
-            GM_setValue(CONFIG.storageKeys.flag, null); // 清除刷新标记
-            await this.buildUI();
-            this.bindEvents();
-            this.handleAutoPlay();
-        }
-
-        async buildUI() {
-            const style = `
-                .${this.vipBoxId}_container { 
-                    position: fixed; top: 120px; left: 0; z-index: 2147483647; 
-                    display: flex; flex-direction: column; gap: 4px;
-                }
-                .${this.vipBoxId}_container .vip-btn { 
-                    width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
-                    background: #334155; border-radius: 9px; color: white; font-weight: bold;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; font-size: 14px;
-                    user-select: none;
-                }
-                .${this.vipBoxId}_container .vip-btn.main-btn { background: #6d28d9; font-size: 16px; }
-                .${this.vipBoxId}_container .vip-btn.auto-btn { background: #4338ca; }
-                .${this.vipBoxId}_container .vip-btn.reload-btn { background: #be123c; }
-                .${this.vipBoxId}_source_list {
-                    display: none; position: absolute; left: 36px; top: 0; width: 340px;
-                    max-height: 75vh; overflow-y: auto; background: #071827; border: 1px solid #0ea5e9;
-                    border-radius: 10px; padding: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-                }
-                .${this.vipBoxId}_source_list .source-category {
-                    color: #7dd3fc; font-weight: bold; margin: 8px 0 4px; font-size: 14px;
-                }
-                .${this.vipBoxId}_source_list .source-grid {
-                    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px;
-                }
-                .${this.vipBoxId}_source_list .source-item {
-                    padding: 6px 4px; border: 1px solid #155e75; border-radius: 6px;
-                    color: #e0f7ff; background: #0b2942; font-size: 12px; text-align: center;
-                    cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                }
-                .${this.vipBoxId}_source_list .source-item:hover, .${this.vipBoxId}_source_list .source-item.selected {
-                    border-color: #38bdf8; background: #0e7490; color: white;
-                }
-                @media (max-width: 520px) {
-                    .${this.vipBoxId}_source_list { width: 280px; }
-                    .${this.vipBoxId}_source_list .source-grid { grid-template-columns: repeat(2, 1fr); }
-                }
-            `;
-            Utils.injectStyle(style);
-            
-            const container = await Utils.waitForElement(this.currentConfig.container);
-            // 隐藏原有广告/遮罩
-            if (this.currentConfig.cleanup) {
-                this.currentConfig.cleanup.forEach(sel => {
-                    document.querySelectorAll(sel).forEach(el => {
-                        el.style.setProperty('display', 'none', 'important');
-                        el.style.setProperty('opacity', '0', 'important');
-                        el.style.setProperty('pointer-events', 'none', 'important');
-                    });
-                });
-            }
-            
-            // 创建悬浮按钮组
-            const btnContainer = document.createElement('div');
-            btnContainer.className = `${this.vipBoxId}_container`;
-            
-            btnContainer.innerHTML = `
-                <div class="vip-btn main-btn" title="选择解析源">VIP</div>
-                <div class="vip-btn auto-btn" title="自动解析开关">${GM_getValue(CONFIG.storageKeys.autoPlayEnabled) ? '开' : '关'}</div>
-                <div class="vip-btn reload-btn" title="刷新解析">刷</div>
-                <div class="${this.vipBoxId}_source_list">
-                    <div class="source-category">📺 内嵌播放</div>
-                    <div class="source-grid" id="source-embed"></div>
-                    <div class="source-category">🔗 弹窗播放</div>
-                    <div class="source-grid" id="source-popup"></div>
-                </div>
-            `;
-            document.body.appendChild(btnContainer);
-            
-            // 填充解析源
-            const embedGrid = btnContainer.querySelector('#source-embed');
-            const popupGrid = btnContainer.querySelector('#source-popup');
-            CONFIG.parseSources.forEach((src, idx) => {
-                const item = document.createElement('div');
-                item.className = 'source-item';
-                item.textContent = src.name;
-                item.dataset.index = idx;
-                item.dataset.mode = 'embed';
-                item.addEventListener('click', () => this.playVideo(idx, 'embed'));
-                embedGrid.appendChild(item);
-                
-                const popupItem = item.cloneNode(true);
-                popupItem.dataset.mode = 'popup';
-                popupItem.addEventListener('click', () => this.playVideo(idx, 'popup'));
-                popupGrid.appendChild(popupItem);
-            });
-            
-            this.ui = {
-                container: btnContainer,
-                mainBtn: btnContainer.querySelector('.main-btn'),
-                autoBtn: btnContainer.querySelector('.auto-btn'),
-                reloadBtn: btnContainer.querySelector('.reload-btn'),
-                sourceList: btnContainer.querySelector(`.${this.vipBoxId}_source_list`)
-            };
-        }
-
-        bindEvents() {
-            // 显示/隐藏源列表
-            this.ui.mainBtn.addEventListener(CONFIG.isMobile ? 'click' : 'mouseenter', () => {
-                this.ui.sourceList.style.display = 'block';
-            });
-            this.ui.sourceList.addEventListener(CONFIG.isMobile ? 'click' : 'mouseleave', (e) => {
-                if (!CONFIG.isMobile || e.target === this.ui.sourceList) {
-                    this.ui.sourceList.style.display = 'none';
-                }
-            });
-            
-            // 刷新按钮
-            this.ui.reloadBtn.addEventListener('click', () => {
-                const iframe = document.querySelector(`.${this.iframeClass} iframe`);
-                if (iframe) {
-                    iframe.src = iframe.src;
-                }
-            });
-            
-            // 自动播放开关
-            this.ui.autoBtn.addEventListener('click', () => {
-                const enabled = GM_getValue(CONFIG.storageKeys.autoPlayEnabled);
-                if (enabled) {
-                    GM_setValue(CONFIG.storageKeys.autoPlayEnabled, false);
-                    this.ui.autoBtn.textContent = '关';
-                } else {
-                    GM_setValue(CONFIG.storageKeys.autoPlayEnabled, true);
-                    this.ui.autoBtn.textContent = '开';
-                }
-                // 刷新页面以应用/取消自动解析
-                setTimeout(() => location.reload(), 200);
-            });
-            
-            // 支持拖拽移动按钮组位置
-            this.enableDrag(this.ui.container);
-        }
-
-        enableDrag(element) {
-            let isDragging = false, startX, startY, initialLeft, initialTop;
-            element.addEventListener('mousedown', (e) => {
-                if (e.button !== 2) return; // 右键开始拖动
-                e.preventDefault();
-                isDragging = true;
-                const rect = element.getBoundingClientRect();
-                startX = e.clientX;
-                startY = e.clientY;
-                initialLeft = rect.left;
-                initialTop = rect.top;
-                element.style.cursor = 'grabbing';
-            });
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                let newLeft = initialLeft + dx;
-                let newTop = initialTop + dy;
-                // 防止拖出屏幕
-                newLeft = Math.max(0, Math.min(window.innerWidth - element.offsetWidth, newLeft));
-                newTop = Math.max(0, Math.min(window.innerHeight - element.offsetHeight, newTop));
-                element.style.left = newLeft + 'px';
-                element.style.top = newTop + 'px';
-            });
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-                element.style.cursor = '';
-            });
-            // 触摸拖拽支持（移动端）
-            // 简化：此处仅保留PC拖拽
-        }
-
-        handleAutoPlay() {
-            const autoPlayEnabled = GM_getValue(CONFIG.storageKeys.autoPlayEnabled);
-            if (!autoPlayEnabled) return;
-            
-            const savedIndex = GM_getValue(CONFIG.storageKeys.autoPlayIndex, 0);
-            if (CONFIG.parseSources[savedIndex]) {
-                setTimeout(() => {
-                    this.playVideo(savedIndex, 'embed');
-                    // 高亮选中项
-                    const embedItems = document.querySelectorAll('#source-embed .source-item');
-                    if (embedItems[savedIndex]) embedItems[savedIndex].classList.add('selected');
-                }, 1500);
-            }
-        }
-
-        playVideo(index, mode = 'embed') {
-            const source = CONFIG.parseSources[index];
-            if (!source) return;
-            const url = source.url + location.href;
-            
-            if (mode === 'popup') {
-                GM_openInTab(url, { active: true, insert: true, setParent: true });
-                return;
-            }
-            
-            // 内嵌播放
-            this.preparePlayerContainer()
-                .then(playerContainer => {
-                    this.injectIframe(playerContainer, url);
-                });
-        }
-
-        async preparePlayerContainer() {
-            const containerSelector = this.currentConfig.container;
-            const container = await Utils.waitForElement(containerSelector);
-            // 再次清理遮挡元素
-            if (this.currentConfig.cleanup) {
-                this.currentConfig.cleanup.forEach(sel => {
-                    document.querySelectorAll(sel).forEach(el => {
-                        el.style.setProperty('display', 'none', 'important');
-                    });
-                });
-            }
-            // 清空原容器并调整样式
-            container.innerHTML = '';
-            const style = getComputedStyle(container);
-            if (style.position === 'static') container.style.position = 'relative';
-            container.style.overflow = 'hidden';
-            
-            // 移动端特殊处理宽度高度
-            if (CONFIG.isMobile) {
-                const w = container.clientWidth;
-                if (w > 0) {
-                    container.style.height = (w * 9 / 16) + 'px';
-                }
-            } else {
-                container.style.height = '100%';
-            }
-            
-            // 启动媒体拦截
-            MediaBlocker.start();
-            
-            return container;
-        }
-
-        injectIframe(container, url) {
-            // 移除旧iframe
-            const oldWrapper = document.querySelector(`.${this.iframeClass}_wrapper`);
-            if (oldWrapper) oldWrapper.remove();
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = `${this.iframeClass}_wrapper`;
-            wrapper.style.cssText = `
-                width: 100%; height: 100%; position: relative; background: #000;
-            `;
-            
-            const iframe = document.createElement('iframe');
-            iframe.src = url;
-            iframe.className = this.iframeClass;
-            iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
-            iframe.setAttribute('allowfullscreen', 'true');
-            iframe.style.cssText = `
-                width: 100%; height: 100%; border: none; position: absolute; top:0; left:0;
-            `;
-            wrapper.appendChild(iframe);
-            container.appendChild(wrapper);
+    function checkPassword() {
+        const input = document.getElementById('passwordInput').value;
+        const errorMsg = document.getElementById('errorMsg');
+        if (input === PASSWORD) {
+            // 密码正确：隐藏登录框，显示主界面
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+        } else {
+            errorMsg.textContent = '密码错误，请重试';
+            document.getElementById('passwordInput').value = '';
         }
     }
 
-    // ==================== 启动脚本 ====================
-    const parser = new VideoParser();
-    parser.start().catch(err => console.error('VIP解析脚本启动失败:', err));
-})();
+    // 支持回车键提交密码
+    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            checkPassword();
+        }
+    });
+
+    // ===== 以下为主应用功能 =====
+    function openSite(url) {
+        window.open(url, '_blank');
+    }
+
+    function playVideo() {
+        const video = document.getElementById('videoUrl').value.trim();
+        if (!video) {
+            alert('请先粘贴视频网址');
+            return;
+        }
+        window.open('https://jx.xmflv.cc/?url=' + video, '_blank');
+    }
+
+    function clearUrl() {
+        document.getElementById('videoUrl').value = '';
+    }
+
+    // 注册 Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW 注册成功'))
+                .catch(err => console.log('SW 注册失败', err));
+        });
+    }
+</script>
+</body>
+</html>
